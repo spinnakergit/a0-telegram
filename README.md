@@ -109,19 +109,28 @@ Set `TELEGRAM_BOT_TOKEN` environment variable, or configure in WebUI settings.
 
 See [docs/QUICKSTART.md](docs/QUICKSTART.md) for detailed setup instructions.
 
+## Verification
+
+- **58/58 regression tests passed**
+- **76/76 human verification tests passed** (2026-03-11)
+- **Security assessment completed** (Stage 3a — all Critical/High findings remediated)
+- Results: [tests/HUMAN_TEST_RESULTS.md](tests/HUMAN_TEST_RESULTS.md)
+- Security: [tests/SECURITY_ASSESSMENT_RESULTS.md](tests/SECURITY_ASSESSMENT_RESULTS.md)
+
 ## Documentation
 
 - [Quick Start Guide](docs/QUICKSTART.md)
+- [Setup Guide](docs/SETUP.md)
 - [Development Guide](docs/DEVELOPMENT.md)
 - [Full Documentation](docs/README.md)
 
 ## Testing
 
 ```bash
-./tests/regression_test.sh [container_name] [port]
+bash tests/regression_test.sh [container_name] [port]
 ```
 
-45+ automated tests covering container health, installation, imports, API endpoints,
+58+ automated tests covering container health, installation, imports, API endpoints,
 sanitization, tool imports, prompts, skills, WebUI, framework compatibility, and security.
 
 ## License

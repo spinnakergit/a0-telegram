@@ -1,214 +1,240 @@
-<div class="telegram-config" id="telegram-config-root" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 16px;">
-    <h3 style="color: #0088cc; margin: 0 0 16px 0;">Telegram Settings</h3>
+<html>
+<head><title>Telegram</title></head>
+<body>
+    <div x-data x-init="
+        if (!config.bot) config.bot = {};
+        if (!config.defaults) config.defaults = {};
+        if (!config.memory) config.memory = {};
+        if (!config.polling) config.polling = {};
+        if (!config.chat_bridge) config.chat_bridge = {};
+        if (!config.security) config.security = {};
+        if (config.allowed_chats === undefined) config.allowed_chats = [];
+    ">
+        <template x-if="config">
+            <div>
+                <!-- Bot Account -->
+                <div class="section-title">Bot Account</div>
+                <div class="section-description">
+                    Create a bot via <strong>@BotFather</strong> on Telegram to get your token.
+                </div>
 
-    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px;">
-        <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary, #666); text-transform: uppercase; margin-bottom: 8px;">Bot Account</div>
-        <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 4px;">Bot Token</label>
-        <input type="password" data-tg="bot-token" placeholder="Bot token from @BotFather" style="width: 100%; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px; font-size: 12px; box-sizing: border-box;">
-        <div style="font-size: 10px; color: var(--text-tertiary, #999); margin-top: 2px;">From @BotFather on Telegram. Required for all operations.</div>
-    </div>
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Bot Token</div>
+                        <div class="field-description">From @BotFather. Required for all operations.</div>
+                    </div>
+                    <div class="field-control">
+                        <input type="password" x-model="config.bot.token" placeholder="123456:ABC-DEF..." />
+                    </div>
+                </div>
 
-    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px;">
-        <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary, #666); text-transform: uppercase; margin-bottom: 8px;">Allowed Chats</div>
-        <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 4px;">Allowed Chat IDs (one per line)</label>
-        <textarea data-tg="allowed-chats" rows="3" placeholder="Leave empty for all chats" style="width: 100%; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
-        <div style="font-size: 10px; color: var(--text-tertiary, #999); margin-top: 2px;">Only these chat IDs can use the tools. Leave empty to allow all.</div>
-    </div>
+                <!-- Access Control -->
+                <div class="section-title">Access Control</div>
+                <div class="section-description">
+                    Restrict which Telegram chats can use the plugin tools.
+                </div>
 
-    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px;">
-        <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary, #666); text-transform: uppercase; margin-bottom: 8px;">Memory</div>
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; cursor: pointer;">
-            <input type="checkbox" data-tg="auto-summaries" checked> Auto-save summaries to memory
-        </label>
-    </div>
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Allowed Chat IDs</div>
+                        <div class="field-description">One per line. Leave empty to allow all chats.</div>
+                    </div>
+                    <div class="field-control">
+                        <textarea rows="3"
+                            :value="(config.allowed_chats || []).join('\n')"
+                            @input="config.allowed_chats = $event.target.value.split('\n').map(s => s.trim()).filter(Boolean)"
+                            placeholder="Leave empty for all chats"></textarea>
+                    </div>
+                </div>
 
-    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px;">
-        <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary, #666); text-transform: uppercase; margin-bottom: 8px;">Polling</div>
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; cursor: pointer;">
-            <input type="checkbox" data-tg="polling-enabled"> Enable background polling
-        </label>
-        <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 4px; margin-top: 8px;">Polling Interval (seconds)</label>
-        <input type="number" data-tg="poll-interval" value="60" min="10" max="3600" style="width: 80px; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px; font-size: 12px;">
-    </div>
+                <!-- Memory -->
+                <div class="section-title">Memory</div>
 
-    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px;">
-        <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary, #666); text-transform: uppercase; margin-bottom: 8px;">Chat Bridge</div>
-        <div style="font-size: 11px; color: var(--text-secondary, #888); margin-bottom: 8px;">
-            Route Telegram messages through Agent Zero's LLM. Requires a bot token. Chats are managed via the <code>telegram_chat</code> tool.
-        </div>
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; margin-bottom: 8px;">
-            <input type="checkbox" data-tg="bridge-autostart"> Auto-start chat bridge on agent startup
-        </label>
-        <div style="font-size: 10px; color: var(--text-tertiary, #999); margin-bottom: 12px;">
-            When enabled, the bot connects automatically when Agent Zero starts (if chats are configured).
-            Add chats by telling the agent: "Add Telegram chat &lt;ID&gt; to the chat bridge"
-        </div>
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Auto-save summaries</div>
+                        <div class="field-description">Automatically save conversation summaries to agent memory.</div>
+                    </div>
+                    <div class="field-control">
+                        <label class="toggle">
+                            <input type="checkbox" x-model="config.memory.auto_save_summaries"
+                                x-init="if (config.memory.auto_save_summaries === undefined) config.memory.auto_save_summaries = true" />
+                            <span class="toggler"></span>
+                        </label>
+                    </div>
+                </div>
 
-        <div style="border-top: 1px solid var(--border-color, #e0e0e0); padding-top: 10px; margin-top: 4px;">
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary, #666); margin-bottom: 6px;">User Allowlist</div>
-            <div style="font-size: 10px; color: var(--text-secondary, #888); margin-bottom: 6px;">
-                Only these Telegram users can interact with the bot. Leave empty to allow all users.
-                Get user IDs via @userinfobot on Telegram.
-            </div>
-            <textarea data-tg="bridge-allowed-users" rows="3" placeholder="Enter Telegram user IDs, one per line" style="width: 100%; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px; font-size: 11px; font-family: monospace; box-sizing: border-box; resize: vertical;"></textarea>
-            <div style="font-size: 10px; color: var(--text-tertiary, #999); margin-top: 2px;">One user ID per line. Users not on the list are silently ignored.</div>
-        </div>
+                <!-- Polling -->
+                <div class="section-title">Polling</div>
 
-        <div style="border-top: 1px solid var(--border-color, #e0e0e0); padding-top: 10px; margin-top: 10px;">
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary, #666); margin-bottom: 6px;">Elevated Mode (2FA)</div>
-            <div style="font-size: 10px; color: var(--text-secondary, #888); margin-bottom: 8px;">
-                When enabled, authenticated users can unlock full Agent Zero access from Telegram using <code>!auth &lt;key&gt;</code>.
-                Default mode is restricted (chat only, no tools).
-            </div>
-            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; margin-bottom: 8px;">
-                <input type="checkbox" data-tg="allow-elevated"> Allow elevated mode
-            </label>
-            <div data-tg="elevated-warning" style="display: none; background: #fce4ec; border: 1px solid #ef9a9a; border-radius: 4px; padding: 10px; margin-bottom: 10px;">
-                <div style="font-size: 11px; font-weight: 700; color: #c62828; margin-bottom: 4px;">SECURITY NOTICE</div>
-                <div style="font-size: 11px; color: #b71c1c; line-height: 1.5;">
-                    Elevated mode grants Telegram users <strong>full access</strong> to Agent Zero's capabilities, including code execution, file operations, and system tools.
-                    Before enabling, you <strong>must</strong> read and understand the security section in the plugin's
-                    <strong>README.md</strong>.
-                    <br><br>
-                    <strong>Recommended configuration:</strong> A private chat or group with only trusted members, a defined User Allowlist above, and short session timeouts. Only allow users you deeply trust.
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Enable background polling</div>
+                        <div class="field-description">Periodically check watched chats for new messages.</div>
+                    </div>
+                    <div class="field-control">
+                        <label class="toggle">
+                            <input type="checkbox" x-model="config.polling.enabled" />
+                            <span class="toggler"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field" x-show="config.polling.enabled">
+                    <div class="field-label">
+                        <div class="field-title">Polling interval (seconds)</div>
+                        <div class="field-description">How often to check for new messages (10-3600).</div>
+                    </div>
+                    <div class="field-control">
+                        <input type="number" min="10" max="3600" x-model.number="config.polling.interval"
+                            x-init="if (!config.polling.interval) config.polling.interval = 60" />
+                    </div>
+                </div>
+
+                <!-- Chat Bridge -->
+                <div class="section-title">Chat Bridge</div>
+                <div class="section-description">
+                    Route Telegram messages through Agent Zero's LLM. Chats are managed via the <code>telegram_chat</code> tool.
+                </div>
+
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Auto-start on agent startup</div>
+                        <div class="field-description">Automatically connect the bot when Agent Zero starts.</div>
+                    </div>
+                    <div class="field-control">
+                        <label class="toggle">
+                            <input type="checkbox" x-model="config.chat_bridge.auto_start" />
+                            <span class="toggler"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">User Allowlist</div>
+                        <div class="field-description">Only these Telegram user IDs can interact with the bot. Leave empty to allow all. Get IDs via @userinfobot.</div>
+                    </div>
+                    <div class="field-control">
+                        <textarea rows="3"
+                            :value="(config.chat_bridge.allowed_users || []).join('\n')"
+                            @input="config.chat_bridge.allowed_users = $event.target.value.split('\n').map(s => s.trim()).filter(Boolean)"
+                            placeholder="One user ID per line"></textarea>
+                    </div>
+                </div>
+
+                <!-- Elevated Mode -->
+                <div class="section-title">Elevated Mode (2FA)</div>
+                <div class="section-description">
+                    When enabled, users can unlock full Agent Zero access via <code>!auth &lt;key&gt;</code>.
+                    Default mode is restricted (chat only, no tools).
+                </div>
+
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Allow elevated mode</div>
+                        <div class="field-description">Grants authenticated users full agent access including code execution and file operations.</div>
+                    </div>
+                    <div class="field-control">
+                        <label class="toggle">
+                            <input type="checkbox" x-model="config.chat_bridge.allow_elevated" />
+                            <span class="toggler"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <template x-if="config.chat_bridge.allow_elevated">
+                    <div>
+                        <div style="background: var(--bg-warning, #fce4ec); border: 1px solid var(--border-warning, #ef9a9a); border-radius: 6px; padding: 10px; margin-bottom: 12px;">
+                            <div style="font-size: 12px; font-weight: 700; color: var(--text-error, #c62828); margin-bottom: 4px;">Security Notice</div>
+                            <div style="font-size: 11px; color: var(--text-error, #b71c1c); line-height: 1.5;">
+                                Elevated mode grants full access to Agent Zero. Use a private chat, define a User Allowlist, and use short session timeouts.
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-label">
+                                <div class="field-title">Auth Key</div>
+                                <div class="field-description">Users send <code>!auth &lt;key&gt;</code> in Telegram to elevate. Share securely.</div>
+                            </div>
+                            <div class="field-control" style="display: flex; gap: 6px; align-items: center;">
+                                <input type="text" x-model="config.chat_bridge.auth_key" readonly
+                                    style="font-family: monospace; flex: 1;" />
+                                <button class="btn btn-field" @click="
+                                    (globalThis.fetchApi || fetch)('/api/plugins/telegram/telegram_config_api', {
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify({action: 'generate_auth_key'})
+                                    }).then(r => r.json()).then(d => { if (d.auth_key) config.chat_bridge.auth_key = d.auth_key; })
+                                ">Regenerate</button>
+                                <button class="btn btn-field" @click="
+                                    navigator.clipboard.writeText(config.chat_bridge.auth_key || '').then(() => {
+                                        $event.target.textContent = 'Copied!';
+                                        setTimeout(() => $event.target.textContent = 'Copy', 2000);
+                                    })
+                                ">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-label">
+                                <div class="field-title">Session Timeout</div>
+                                <div class="field-description">How long elevated sessions last before requiring re-authentication.</div>
+                            </div>
+                            <div class="field-control">
+                                <select x-model.number="config.chat_bridge.session_timeout"
+                                    x-init="if (config.chat_bridge.session_timeout === undefined) config.chat_bridge.session_timeout = 300">
+                                    <option value="300">5 minutes</option>
+                                    <option value="900">15 minutes</option>
+                                    <option value="1800">30 minutes</option>
+                                    <option value="3600">1 hour</option>
+                                    <option value="7200">2 hours</option>
+                                    <option value="14400">4 hours</option>
+                                    <option value="0">Never expire</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div x-show="config.chat_bridge.session_timeout == 0"
+                            style="background: var(--bg-warning, #fff3e0); border: 1px solid var(--border-warning, #ffcc80); border-radius: 6px; padding: 8px; font-size: 11px; color: var(--text-warning, #e65100);">
+                            <strong>Warning:</strong> "Never expire" means elevated sessions stay active until bot restart or <code>!deauth</code>.
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Security -->
+                <div class="section-title">Security</div>
+                <div class="section-description">Prompt injection defense settings.</div>
+
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Sanitize message content</div>
+                        <div class="field-description">Strip potentially dangerous content from incoming messages.</div>
+                    </div>
+                    <div class="field-control">
+                        <label class="toggle">
+                            <input type="checkbox" x-model="config.security.sanitize_content"
+                                x-init="if (config.security.sanitize_content === undefined) config.security.sanitize_content = true" />
+                            <span class="toggler"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-label">
+                        <div class="field-title">Strip injection patterns</div>
+                        <div class="field-description">Remove known prompt injection patterns from messages.</div>
+                    </div>
+                    <div class="field-control">
+                        <label class="toggle">
+                            <input type="checkbox" x-model="config.security.strip_injection_patterns"
+                                x-init="if (config.security.strip_injection_patterns === undefined) config.security.strip_injection_patterns = true" />
+                            <span class="toggler"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
-            <div data-tg="elevated-settings" style="display: none; margin-top: 8px;">
-                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 4px;">Auth Key</label>
-                <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="text" data-tg="auth-key" readonly style="flex: 1; padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px; font-size: 11px; font-family: monospace; background: var(--bg-secondary, #f5f5f5); box-sizing: border-box;">
-                    <button data-tg="regen-key-btn" style="background: #0088cc; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; white-space: nowrap;">Regenerate</button>
-                    <button data-tg="copy-key-btn" style="background: var(--bg-secondary, #e0e0e0); color: var(--text-primary, #333); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; white-space: nowrap;">Copy</button>
-                </div>
-                <div style="font-size: 10px; color: var(--text-tertiary, #999); margin-top: 4px;">
-                    Share this key securely. Users type <code>!auth &lt;key&gt;</code> in Telegram to elevate. The message is auto-deleted.
-                </div>
-                <label style="font-size: 12px; font-weight: 500; display: block; margin-top: 10px; margin-bottom: 4px;">Session Timeout</label>
-                <select data-tg="session-timeout" style="padding: 6px 8px; border: 1px solid var(--border-color, #ddd); border-radius: 4px; font-size: 12px;">
-                    <option value="300">5 minutes</option>
-                    <option value="900">15 minutes</option>
-                    <option value="1800">30 minutes</option>
-                    <option value="3600">1 hour</option>
-                    <option value="7200">2 hours</option>
-                    <option value="14400">4 hours</option>
-                    <option value="0">Never expire</option>
-                </select>
-                <div style="font-size: 10px; color: var(--text-tertiary, #999); margin-top: 2px;">How long elevated sessions last before requiring re-authentication.</div>
-                <div data-tg="never-expire-warning" style="display: none; background: #fff3e0; border: 1px solid #ffcc80; border-radius: 4px; padding: 6px 8px; font-size: 10px; color: #e65100; margin-top: 6px;">
-                    <strong>Security warning:</strong> "Never expire" means an elevated session stays active until the bot restarts or the user runs <code>!deauth</code>. Use with caution.
-                </div>
-            </div>
-        </div>
+        </template>
     </div>
-
-    <button data-tg="save-btn" style="background: #0088cc; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Save Telegram Settings</button>
-    <span data-tg="save-status" style="margin-left: 10px; font-size: 12px;"></span>
-    <div style="font-size: 11px; color: #e65100; background: #fff3e0; padding: 6px 10px; border-radius: 4px; margin-top: 8px; border-left: 3px solid #ff9800;">&#9888; Use this button to save Telegram settings. The outer page "Save" button does not save plugin settings.</div>
-</div>
-
-<script>
-(function() {
-    const fetchApi = globalThis.fetchApi || fetch;
-
-    const root = document.querySelector('#telegram-config-root') ||
-                 document.querySelector('.telegram-config') ||
-                 document.currentScript?.parentElement;
-
-    if (!root) { console.error('[Telegram Config] Cannot find config root element'); return; }
-
-    function el(key) {
-        return root.querySelector('[data-tg="' + key + '"]');
-    }
-
-    async function loadConfig() {
-        try {
-            const resp = await fetchApi('/api/plugins/telegram/telegram_config_api', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({action: 'get'})
-            });
-            const c = await resp.json();
-            if (c.bot?.token) el('bot-token').value = c.bot.token;
-            if (c.allowed_chats?.length) el('allowed-chats').value = c.allowed_chats.join('\n');
-            if (c.memory) el('auto-summaries').checked = c.memory.auto_save_summaries !== false;
-            if (c.polling) {
-                el('polling-enabled').checked = c.polling.enabled === true;
-                el('poll-interval').value = c.polling.interval || 60;
-            }
-            if (c.chat_bridge) {
-                el('bridge-autostart').checked = c.chat_bridge.auto_start === true;
-                if (c.chat_bridge.allowed_users?.length) el('bridge-allowed-users').value = c.chat_bridge.allowed_users.join('\n');
-                el('allow-elevated').checked = c.chat_bridge.allow_elevated === true;
-                if (c.chat_bridge.auth_key) el('auth-key').value = c.chat_bridge.auth_key;
-                if (c.chat_bridge.session_timeout !== undefined) el('session-timeout').value = String(c.chat_bridge.session_timeout);
-                toggleElevatedSettings();
-                toggleNeverExpireWarning();
-            }
-        } catch (e) { console.error('[Telegram Config] Load error:', e); }
-    }
-
-    function toggleElevatedSettings() {
-        const show = el('allow-elevated')?.checked;
-        const s = el('elevated-settings'); const w = el('elevated-warning');
-        if (s) s.style.display = show ? 'block' : 'none';
-        if (w) w.style.display = show ? 'block' : 'none';
-    }
-
-    function toggleNeverExpireWarning() {
-        const w = el('never-expire-warning');
-        if (w) w.style.display = el('session-timeout')?.value === '0' ? 'block' : 'none';
-    }
-
-    async function saveConfig() {
-        const status = el('save-status');
-        const botToken = el('bot-token')?.value || '';
-        const config = {
-            action: 'set',
-            bot: { token: botToken, username: '' },
-            defaults: { message_limit: 50, parse_mode: 'HTML' },
-            allowed_chats: (el('allowed-chats')?.value || '').split('\n').map(s => s.trim()).filter(Boolean),
-            memory: { auto_save_summaries: el('auto-summaries')?.checked ?? true, export_format: 'markdown' },
-            polling: { enabled: el('polling-enabled')?.checked ?? false, interval: parseInt(el('poll-interval')?.value) || 60, watch_chats: [] },
-            chat_bridge: {
-                auto_start: el('bridge-autostart')?.checked ?? false,
-                allowed_users: (el('bridge-allowed-users')?.value || '').split('\n').map(s => s.trim()).filter(Boolean),
-                allow_elevated: el('allow-elevated')?.checked ?? false,
-                auth_key: el('auth-key')?.value || '',
-                session_timeout: parseInt(el('session-timeout')?.value) || 300
-            },
-            security: { max_message_length: 4096, sanitize_content: true, strip_injection_patterns: true }
-        };
-        try {
-            const resp = await fetchApi('/api/plugins/telegram/telegram_config_api', {
-                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(config)
-            });
-            const result = await resp.json();
-            if (result.ok) { status.style.color = '#2e7d32'; status.textContent = 'Saved!'; }
-            else { status.style.color = '#c62828'; status.textContent = 'Error: ' + (result.error || 'Unknown'); }
-            setTimeout(() => { status.textContent = ''; }, 5000);
-        } catch (e) { status.style.color = '#c62828'; status.textContent = 'Network error'; }
-    }
-
-    el('save-btn')?.addEventListener('click', saveConfig);
-    el('allow-elevated')?.addEventListener('change', toggleElevatedSettings);
-    el('session-timeout')?.addEventListener('change', toggleNeverExpireWarning);
-    el('regen-key-btn')?.addEventListener('click', async function() {
-        try {
-            const resp = await fetchApi('/api/plugins/telegram/telegram_config_api', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({action: 'generate_auth_key'})
-            });
-            const r = await resp.json();
-            if (r.auth_key) el('auth-key').value = r.auth_key;
-        } catch (e) { console.error('[Telegram Config] Key gen error:', e); }
-    });
-    el('copy-key-btn')?.addEventListener('click', function() {
-        const key = el('auth-key')?.value;
-        if (key) navigator.clipboard.writeText(key).then(() => {
-            this.textContent = 'Copied!'; setTimeout(() => { this.textContent = 'Copy'; }, 2000);
-        });
-    });
-
-    loadConfig();
-})();
-</script>
+</body>
+</html>

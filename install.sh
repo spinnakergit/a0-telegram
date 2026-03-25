@@ -36,22 +36,26 @@ echo ""
 # Create target directory
 mkdir -p "$PLUGIN_DIR"
 
-# Copy plugin files
-echo "Copying plugin files..."
-cp -r "$SCRIPT_DIR/plugin.yaml" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/default_config.yaml" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/initialize.py" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/helpers" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/tools" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/prompts" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/api" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/webui" "$PLUGIN_DIR/"
-cp -r "$SCRIPT_DIR/extensions" "$PLUGIN_DIR/"
+# Copy plugin files (skip if already installed in-place, e.g. via A0 plugin installer)
+if [ "$(realpath "$SCRIPT_DIR")" != "$(realpath "$PLUGIN_DIR")" ]; then
+    echo "Copying plugin files..."
+    cp -r "$SCRIPT_DIR/plugin.yaml" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/default_config.yaml" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/initialize.py" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/helpers" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/tools" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/prompts" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/api" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/webui" "$PLUGIN_DIR/"
+    cp -r "$SCRIPT_DIR/extensions" "$PLUGIN_DIR/"
 
-# Copy docs and README if present
-[ -d "$SCRIPT_DIR/docs" ] && cp -r "$SCRIPT_DIR/docs" "$PLUGIN_DIR/"
-[ -f "$SCRIPT_DIR/README.md" ] && cp "$SCRIPT_DIR/README.md" "$PLUGIN_DIR/"
-[ -f "$SCRIPT_DIR/LICENSE" ] && cp "$SCRIPT_DIR/LICENSE" "$PLUGIN_DIR/"
+    # Copy docs and README if present
+    [ -d "$SCRIPT_DIR/docs" ] && cp -r "$SCRIPT_DIR/docs" "$PLUGIN_DIR/"
+    [ -f "$SCRIPT_DIR/README.md" ] && cp "$SCRIPT_DIR/README.md" "$PLUGIN_DIR/"
+    [ -f "$SCRIPT_DIR/LICENSE" ] && cp "$SCRIPT_DIR/LICENSE" "$PLUGIN_DIR/"
+else
+    echo "Files already in place (installed via plugin manager), skipping copy..."
+fi
 
 # Create data directory with restrictive permissions
 mkdir -p "$PLUGIN_DIR/data"

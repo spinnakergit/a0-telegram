@@ -7,14 +7,41 @@ Send, receive, and manage messages via Telegram Bot API with real-time chat brid
 ## Contents
 
 - [Quick Start](QUICKSTART.md) — Installation and first-use guide
+- [Setup](SETUP.md) — Detailed setup, credentials, and troubleshooting
 - [Development](DEVELOPMENT.md) — Contributing and development setup
 
 ## Architecture
 
 ```
+a0-telegram/
+├── plugin.yaml              # Plugin manifest
+├── default_config.yaml      # Default settings
+├── initialize.py            # Dependency installer (aiohttp, pyyaml, python-telegram-bot)
+├── install.sh               # Deployment script
+├── hooks.py                 # Plugin lifecycle hooks (install/uninstall)
+├── .gitignore
+├── helpers/
+│   ├── telegram_client.py   # REST API client wrapper (aiohttp)
+│   ├── telegram_bridge.py   # Chat bridge bot (python-telegram-bot polling)
+│   ├── sanitize.py          # Prompt injection defense, input validation
+│   ├── message_store.py     # Persistent message storage
+│   └── poll_state.py        # Background polling state
+├── tools/                   # 6 tools
+├── prompts/                 # 6 prompt files
+├── skills/                  # 3 skills
+├── api/                     # 3 API endpoints
+├── webui/                   # Dashboard + Settings
+├── extensions/              # Auto-start chat bridge hook
+├── tests/                   # Regression suite + Human verification
+└── docs/                    # Documentation
+```
+
+### Data Flow
+
+```
 ┌─────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Telegram    │────>│  telegram_client │────>│  Telegram Bot   │
-│  Bot API     │<────│  (REST wrapper)  │<────│  API Server     │
+│  Agent Zero  │────>│  telegram_client │────>│  Telegram Bot   │
+│  (tools)     │<────│  (REST wrapper)  │<────│  API Server     │
 └─────────────┘     └─────────────────┘     └─────────────────┘
                            │
                     ┌──────┴──────┐
@@ -37,46 +64,53 @@ Chat Bridge:
                   │ Elevated:   context.communicate (full agent)
 ```
 
-### Components
-
-- **telegram_client.py**: Lightweight REST wrapper around the Telegram Bot API using aiohttp
-- **telegram_bridge.py**: Persistent bot using python-telegram-bot with polling for the chat bridge
-- **sanitize.py**: Prompt injection defense (NFKC normalization, zero-width stripping, injection pattern blocking)
-- **poll_state.py**: Persistent state for background message watching
-
 ### Security Layers
 
-1. **Sanitization**: All external content normalized and checked for injection patterns
-2. **CSRF protection**: All API endpoints require CSRF tokens
-3. **Token masking**: Bot tokens masked in API responses and WebUI
-4. **User allowlist**: Chat bridge only responds to authorized users
-5. **Rate limiting**: Per-user message rate limits in chat bridge
-6. **Auth key**: HMAC constant-time comparison for elevated mode authentication
-7. **Session timeout**: Elevated sessions auto-expire (default: 5 minutes)
+1. **Sanitization** — All external content normalized (NFKC) and checked for injection patterns
+2. **CSRF protection** — All API endpoints require CSRF tokens
+3. **Token masking** — Bot tokens masked in API responses
+4. **User allowlist** — Chat bridge only responds to authorized users
+5. **Rate limiting** — Per-user message rate limits in chat bridge
+6. **Auth key** — HMAC constant-time comparison for elevated mode authentication
+7. **Session timeout** — Elevated sessions auto-expire (default: 5 minutes)
 
-## Tools
+## Tools (6)
 
-| Tool | Description |
-|------|-------------|
-| `telegram_read` | Read messages, list chats, get chat info |
-| `telegram_send` | Send messages, photos, reactions, forward |
-| `telegram_members` | List group administrators |
-| `telegram_summarize` | Summarize chat conversations with LLM |
-| `telegram_manage` | Pin/unpin messages, set title/description |
-| `telegram_chat` | Chat bridge control (start/stop/status) |
+| Tool | Description | Actions |
+|------|-------------|---------|
+| `telegram_read` | Read messages and chat info | messages, chats, chat_info |
+| `telegram_send` | Send content | message, photo, reaction, reply, forward |
+| `telegram_members` | Group administration | list, search |
+| `telegram_summarize` | LLM-powered summaries | summarize (with auto-save to memory) |
+| `telegram_manage` | Chat management | pin, unpin, set_title, set_description |
+| `telegram_chat` | Chat bridge control | start, stop, status, add, remove, list |
+
+## Skills (3)
+
+| Skill | Category | Triggers |
+|-------|----------|----------|
+| `telegram-research` | Read & analyze | "read telegram messages", "summarize chat" |
+| `telegram-communicate` | Send & manage | "send telegram message", "manage chat" |
+| `telegram-chat` | Bridge operation | "start telegram bridge", "chat via telegram" |
 
 ## API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/plugins/telegram/telegram_test` | GET/POST | Test bot connection |
-| `/api/plugins/telegram/telegram_config_api` | GET/POST | Read/write config (token masked) |
+| `/api/plugins/telegram/telegram_test` | POST | Test bot connection |
+| `/api/plugins/telegram/telegram_config_api` | POST | Custom actions (auth key generation) |
 | `/api/plugins/telegram/telegram_bridge_api` | POST | Chat bridge start/stop/status |
 
-## Skills
+> **Note:** Config load/save is handled by A0's built-in plugin settings framework. The config API endpoint only handles actions requiring server-side logic.
 
-| Skill | Description |
-|-------|-------------|
-| `telegram-research` | Read and analyze chat history |
-| `telegram-communicate` | Send messages and manage chats |
-| `telegram-chat` | Interactive chat bridge operation |
+## Verification
+
+- **58/58 regression tests passed**
+- **76/76 human verification tests passed** (2026-03-11)
+- **Security assessment completed** (Stage 3a — 1 Critical, 1 High found and fixed)
+- Results: [tests/HUMAN_TEST_RESULTS.md](../tests/HUMAN_TEST_RESULTS.md)
+- Security: [tests/SECURITY_ASSESSMENT_RESULTS.md](../tests/SECURITY_ASSESSMENT_RESULTS.md)
+
+## API Pricing
+
+**Free** — The Telegram Bot API is free for all bots. No paid tiers or rate limit subscriptions.
