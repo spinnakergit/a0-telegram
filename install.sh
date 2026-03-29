@@ -8,7 +8,6 @@
 # For Docker:
 #   docker exec <container> bash -c "cd /tmp && ./install.sh"
 #   Or: docker cp telegram-plugin/ <container>:/a0/usr/plugins/telegram && \
-#       docker exec <container> ln -sf /a0/usr/plugins/telegram /a0/plugins/telegram
 
 set -eu
 
@@ -76,13 +75,6 @@ python3 "$PLUGIN_DIR/initialize.py" || python "$PLUGIN_DIR/initialize.py"
 
 # Enable plugin
 touch "$PLUGIN_DIR/.toggle-1"
-
-# Create symlink so 'from plugins.telegram.helpers...' imports work
-SYMLINK="$A0_ROOT/plugins/telegram"
-if [ ! -e "$SYMLINK" ]; then
-    ln -sf "$PLUGIN_DIR" "$SYMLINK"
-    echo "Created symlink: $SYMLINK -> $PLUGIN_DIR"
-fi
 
 # If /a0 is a runtime copy of /git/agent-zero, also install there
 if [ "$A0_ROOT" = "/a0" ] && [ -d "/git/agent-zero/usr" ]; then

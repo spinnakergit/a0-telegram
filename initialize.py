@@ -61,20 +61,6 @@ def main():
         logger.error(f"Failed to install: {', '.join(failed)}")
         return 1
 
-    # Ensure symlink exists for plugin namespace imports
-    plugin_dir = Path(__file__).resolve().parent
-    for root in [Path("/a0"), Path("/git/agent-zero")]:
-        plugins_dir = root / "plugins"
-        if plugins_dir.is_dir():
-            symlink = plugins_dir / "telegram"
-            if not symlink.exists():
-                try:
-                    symlink.symlink_to(plugin_dir)
-                    logger.info(f"Created symlink: {symlink} -> {plugin_dir}")
-                except OSError as e:
-                    logger.warning(f"Could not create symlink: {e}")
-            break
-
     logger.info("All dependencies ready.")
     return 0
 

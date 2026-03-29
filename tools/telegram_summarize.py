@@ -1,10 +1,10 @@
 import time
 from pathlib import Path
 from helpers.tool import Tool, Response
-from plugins.telegram.helpers.telegram_client import (
+from usr.plugins.telegram.helpers.telegram_client import (
     TelegramClient, TelegramAPIError, format_messages, get_telegram_config,
 )
-from plugins.telegram.helpers.sanitize import require_auth, truncate_bulk, clamp_limit
+from usr.plugins.telegram.helpers.sanitize import require_auth, truncate_bulk, clamp_limit
 
 SUMMARIZE_PROMPT = """You are summarizing a Telegram conversation. Analyze the following messages and produce a structured summary.
 
@@ -75,7 +75,7 @@ class TelegramSummarize(Tool):
             self.set_progress("Fetching messages...")
 
             # Use message store first (populated by bridge), fall back to getUpdates
-            from plugins.telegram.helpers.message_store import get_messages
+            from usr.plugins.telegram.helpers.message_store import get_messages
             messages = get_messages(str(chat_id), limit=limit)
 
             # Only fall back to getUpdates if bridge is NOT actively polling.
@@ -83,7 +83,7 @@ class TelegramSummarize(Tool):
             # the bridge's polling loop.
             if not messages:
                 try:
-                    from plugins.telegram.helpers.telegram_bridge import is_bridge_polling
+                    from usr.plugins.telegram.helpers.telegram_bridge import is_bridge_polling
                     bridge_active = is_bridge_polling()
                 except Exception:
                     bridge_active = False

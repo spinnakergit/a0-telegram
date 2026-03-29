@@ -56,7 +56,7 @@ def load_chat_state() -> dict:
 
 
 def save_chat_state(state: dict):
-    from plugins.telegram.helpers.sanitize import secure_write_json
+    from usr.plugins.telegram.helpers.sanitize import secure_write_json
     secure_write_json(_get_state_path(), state)
 
 
@@ -150,7 +150,7 @@ class ChatBridgeBot:
     def _get_config(self) -> dict:
         """Load the Telegram plugin configuration."""
         try:
-            from plugins.telegram.helpers.telegram_client import get_telegram_config
+            from usr.plugins.telegram.helpers.telegram_client import get_telegram_config
             return get_telegram_config()
         except Exception:
             return {}
@@ -187,12 +187,12 @@ class ChatBridgeBot:
         auth_key = bridge_config.get("auth_key", "")
 
         if not auth_key and bridge_config.get("allow_elevated", False):
-            from plugins.telegram.helpers.sanitize import generate_auth_key
+            from usr.plugins.telegram.helpers.sanitize import generate_auth_key
             auth_key = generate_auth_key()
             bridge_config["auth_key"] = auth_key
             config["chat_bridge"] = bridge_config
             try:
-                from plugins.telegram.helpers.sanitize import secure_write_json
+                from usr.plugins.telegram.helpers.sanitize import secure_write_json
                 config_candidates = [
                     Path("/a0/usr/plugins/telegram/config.json"),
                     Path("/a0/plugins/telegram/config.json"),
@@ -373,7 +373,7 @@ class ChatBridgeBot:
         msg_text = (message.text or "").strip()
         if not msg_text.startswith("!"):
             try:
-                from plugins.telegram.helpers.message_store import store_message
+                from usr.plugins.telegram.helpers.message_store import store_message
                 # Build a raw-style message dict from the python-telegram-bot Message object
                 raw_msg = {
                     "message_id": message.message_id,
@@ -494,7 +494,7 @@ class ChatBridgeBot:
 
             agent = context.agent0
 
-            from plugins.telegram.helpers.sanitize import sanitize_content, sanitize_username
+            from usr.plugins.telegram.helpers.sanitize import sanitize_content, sanitize_username
             author_name = sanitize_username(
                 message.from_user.first_name or message.from_user.username or "User"
             )
@@ -551,7 +551,7 @@ class ChatBridgeBot:
                 set_context_id(chat_id, context.id)
                 logger.info(f"Created new elevated context {context.id} for chat {chat_id}")
 
-            from plugins.telegram.helpers.sanitize import sanitize_content
+            from usr.plugins.telegram.helpers.sanitize import sanitize_content
             safe_text = sanitize_content(text)
             # In elevated mode the user is authenticated — send their message
             # directly as a user request through communicate(). Do NOT prefix
@@ -654,7 +654,7 @@ class ChatBridgeBot:
 
             # Store bot response for telegram_read tool
             try:
-                from plugins.telegram.helpers.message_store import store_message
+                from usr.plugins.telegram.helpers.message_store import store_message
                 raw_msg = {
                     "message_id": sent.message_id,
                     "date": int(sent.date.timestamp()) if sent.date else 0,

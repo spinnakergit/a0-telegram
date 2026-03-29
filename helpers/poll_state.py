@@ -37,7 +37,7 @@ def load_state() -> dict:
 
 def save_state(state: dict):
     """Save the polling state to disk."""
-    from plugins.telegram.helpers.sanitize import secure_write_json
+    from usr.plugins.telegram.helpers.sanitize import secure_write_json
     secure_write_json(_get_state_path(), state)
 
 

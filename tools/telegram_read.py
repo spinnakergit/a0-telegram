@@ -2,10 +2,10 @@ import json
 import os
 
 from helpers.tool import Tool, Response
-from plugins.telegram.helpers.telegram_client import (
+from usr.plugins.telegram.helpers.telegram_client import (
     TelegramClient, TelegramAPIError, format_messages, get_telegram_config,
 )
-from plugins.telegram.helpers.sanitize import require_auth, sanitize_chat_title
+from usr.plugins.telegram.helpers.sanitize import require_auth, sanitize_chat_title
 
 
 # Persistent chat registry — survives across getUpdates calls
@@ -75,14 +75,14 @@ class TelegramRead(Tool):
 
             elif action == "chats":
                 # Check message store first (populated by bridge)
-                from plugins.telegram.helpers.message_store import get_all_chats
+                from usr.plugins.telegram.helpers.message_store import get_all_chats
                 store_chats = get_all_chats()
 
                 # Only try getUpdates if the bridge is NOT actively polling.
                 # Concurrent getUpdates calls cause a Conflict error that crashes
                 # the bridge's polling loop.
                 try:
-                    from plugins.telegram.helpers.telegram_bridge import is_bridge_polling
+                    from usr.plugins.telegram.helpers.telegram_bridge import is_bridge_polling
                     bridge_active = is_bridge_polling()
                 except Exception:
                     bridge_active = False
@@ -126,7 +126,7 @@ class TelegramRead(Tool):
                     return Response(message="Error: chat_id is required for reading messages.", break_loop=False)
 
                 # Try message store first (populated by bridge)
-                from plugins.telegram.helpers.message_store import get_messages
+                from usr.plugins.telegram.helpers.message_store import get_messages
                 messages = get_messages(str(chat_id), limit=limit)
 
                 # Only fall back to getUpdates if bridge is NOT actively polling.
@@ -134,7 +134,7 @@ class TelegramRead(Tool):
                 # the bridge's polling loop.
                 if not messages:
                     try:
-                        from plugins.telegram.helpers.telegram_bridge import is_bridge_polling
+                        from usr.plugins.telegram.helpers.telegram_bridge import is_bridge_polling
                         bridge_active = is_bridge_polling()
                     except Exception:
                         bridge_active = False

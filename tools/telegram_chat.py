@@ -1,6 +1,6 @@
 from helpers.tool import Tool, Response
-from plugins.telegram.helpers.telegram_client import get_telegram_config
-from plugins.telegram.helpers.telegram_bridge import (
+from usr.plugins.telegram.helpers.telegram_client import get_telegram_config
+from usr.plugins.telegram.helpers.telegram_bridge import (
     start_chat_bridge,
     stop_chat_bridge,
     get_bot_status,
@@ -8,7 +8,7 @@ from plugins.telegram.helpers.telegram_bridge import (
     remove_chat,
     get_chat_list,
 )
-from plugins.telegram.helpers.sanitize import require_auth, validate_chat_id
+from usr.plugins.telegram.helpers.sanitize import require_auth, validate_chat_id
 
 
 class TelegramChat(Tool):

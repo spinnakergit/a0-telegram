@@ -1,8 +1,8 @@
 from helpers.tool import Tool, Response
-from plugins.telegram.helpers.telegram_client import (
+from usr.plugins.telegram.helpers.telegram_client import (
     TelegramClient, TelegramAPIError, get_telegram_config,
 )
-from plugins.telegram.helpers.sanitize import require_auth, sanitize_username, validate_chat_id
+from usr.plugins.telegram.helpers.sanitize import require_auth, sanitize_username, validate_chat_id
 
 
 class TelegramMembers(Tool):

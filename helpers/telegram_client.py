@@ -198,7 +198,7 @@ def format_messages(messages: list, include_ids: bool = False) -> str:
     All external content (usernames, message text, captions, filenames) is
     sanitized to neutralise prompt injection attempts.
     """
-    from plugins.telegram.helpers.sanitize import (
+    from usr.plugins.telegram.helpers.sanitize import (
         sanitize_content, sanitize_username, sanitize_caption, sanitize_filename,
     )
 

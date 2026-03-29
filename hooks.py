@@ -36,7 +36,7 @@ def _find_python() -> str:
 
 
 def install(**kwargs):
-    """Post-install hook: set up symlink, data dir, deps, skills, toggle."""
+    """Post-install hook: set up data dir, deps, skills, toggle."""
     plugin_dir = _get_plugin_dir()
     a0_root = _get_a0_root()
     plugin_name = "telegram"
@@ -65,22 +65,7 @@ def install(**kwargs):
             json.dump({}, f)
         logger.info("Created config.json with 0o600 permissions")
 
-    # 4. Create symlink so 'from plugins.telegram.helpers...' imports work
-    symlink = a0_root / "plugins" / plugin_name
-    if not symlink.exists():
-        symlink.symlink_to(plugin_dir)
-        logger.info("Created symlink: %s -> %s", symlink, plugin_dir)
-    elif symlink.is_symlink() and symlink.resolve() != plugin_dir:
-        symlink.unlink()
-        symlink.symlink_to(plugin_dir)
-        logger.info("Updated symlink: %s -> %s", symlink, plugin_dir)
-    elif symlink.is_dir() and not symlink.is_symlink():
-        import shutil
-        shutil.rmtree(str(symlink))
-        symlink.symlink_to(plugin_dir)
-        logger.info("Replaced directory with symlink: %s -> %s", symlink, plugin_dir)
-
-    # 5. Install skills
+    # 4. Install skills
     skills_src = plugin_dir / "skills"
     skills_dst = a0_root / "usr" / "skills"
     if skills_src.is_dir():
@@ -94,7 +79,7 @@ def install(**kwargs):
                         dest.write_bytes(f.read_bytes())
                 logger.info("Installed skill: %s", skill_dir.name)
 
-    # 6. Install Python dependencies via initialize.py
+    # 5. Install Python dependencies via initialize.py
     init_script = plugin_dir / "initialize.py"
     if init_script.is_file():
         python = _find_python()
@@ -112,7 +97,7 @@ def install(**kwargs):
         except subprocess.TimeoutExpired:
             logger.warning("Dependency install timed out")
 
-    # 7. Mirror to /git/agent-zero if running in /a0 runtime
+    # 6. Mirror to /git/agent-zero if running in /a0 runtime
     if str(a0_root) == "/a0" and Path("/git/agent-zero/usr").is_dir():
         git_plugin = Path("/git/agent-zero/usr/plugins") / plugin_name
         if not git_plugin.exists():
@@ -134,7 +119,7 @@ def save_plugin_config(settings: dict, **kwargs) -> dict:
     bridge = settings.get("chat_bridge", {})
     if bridge.get("allow_elevated", False) and not bridge.get("auth_key", ""):
         try:
-            from plugins.telegram.helpers.sanitize import generate_auth_key
+            from usr.plugins.telegram.helpers.sanitize import generate_auth_key
             bridge["auth_key"] = generate_auth_key()
             settings["chat_bridge"] = bridge
             logger.info("Auto-generated auth key on config save")
@@ -144,21 +129,11 @@ def save_plugin_config(settings: dict, **kwargs) -> dict:
 
 
 def uninstall(**kwargs):
-    """Pre-uninstall hook: clean up symlink, skills, bridge runner."""
+    """Pre-uninstall hook: clean up skills, bridge runner."""
     a0_root = _get_a0_root()
     plugin_name = "telegram"
 
     logger.info("Running uninstall hook...")
-
-    # Remove symlink
-    symlink = a0_root / "plugins" / plugin_name
-    if symlink.is_symlink():
-        symlink.unlink()
-        logger.info("Removed symlink: %s", symlink)
-    elif symlink.is_dir():
-        import shutil
-        shutil.rmtree(str(symlink))
-        logger.info("Removed directory: %s", symlink)
 
     # Remove skills
     skills_dst = a0_root / "usr" / "skills"

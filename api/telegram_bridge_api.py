@@ -36,14 +36,14 @@ class TelegramBridgeApi(ApiHandler):
             return {"ok": False, "error": f"Bridge error: {type(e).__name__}"}
 
     def _status(self) -> dict:
-        from plugins.telegram.helpers.telegram_bridge import get_bot_status, get_chat_list
+        from usr.plugins.telegram.helpers.telegram_bridge import get_bot_status, get_chat_list
         status = get_bot_status()
         status["chat_count"] = len(get_chat_list())
         return {"ok": True, **status}
 
     async def _start(self) -> dict:
-        from plugins.telegram.helpers.telegram_bridge import get_bot_status, start_chat_bridge
-        from plugins.telegram.helpers.telegram_client import get_telegram_config
+        from usr.plugins.telegram.helpers.telegram_bridge import get_bot_status, start_chat_bridge
+        from usr.plugins.telegram.helpers.telegram_client import get_telegram_config
 
         status = get_bot_status()
         if status.get("running"):
@@ -61,14 +61,14 @@ class TelegramBridgeApi(ApiHandler):
         return {"ok": True, "message": "Bridge started", **final_status}
 
     async def _stop(self) -> dict:
-        from plugins.telegram.helpers.telegram_bridge import get_bot_status, stop_chat_bridge
+        from usr.plugins.telegram.helpers.telegram_bridge import get_bot_status, stop_chat_bridge
 
         await stop_chat_bridge()
         return {"ok": True, "message": "Bridge stopped", **get_bot_status()}
 
     async def _restart(self) -> dict:
-        from plugins.telegram.helpers.telegram_bridge import get_bot_status, start_chat_bridge, stop_chat_bridge
-        from plugins.telegram.helpers.telegram_client import get_telegram_config
+        from usr.plugins.telegram.helpers.telegram_bridge import get_bot_status, start_chat_bridge, stop_chat_bridge
+        from usr.plugins.telegram.helpers.telegram_client import get_telegram_config
 
         await stop_chat_bridge()
 
