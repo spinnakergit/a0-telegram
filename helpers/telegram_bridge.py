@@ -730,7 +730,7 @@ def _run_bot_in_thread(bot: ChatBridgeBot, ready_event: threading.Event):
             logger.warning("python-telegram-bot not found, installing...")
             import subprocess, sys
             python = "/opt/venv-a0/bin/python3" if os.path.isfile("/opt/venv-a0/bin/python3") else sys.executable
-            subprocess.check_call([python, "-m", "pip", "install", "python-telegram-bot>=21.0,<22"], capture_output=True)
+            subprocess.run([python, "-m", "pip", "install", "python-telegram-bot>=21.0,<22"], capture_output=True, check=True)
             from telegram.ext import ApplicationBuilder, MessageHandler, filters
 
         app = ApplicationBuilder().token(bot.bot_token).build()

@@ -32,6 +32,20 @@ class TelegramChatBridgeInit(Extension):
             return
 
         try:
+            # Self-heal: ensure symlink exists (may be lost on container restart)
+            from pathlib import Path
+            for _root in [Path("/a0"), Path("/git/agent-zero")]:
+                _plugins = _root / "plugins"
+                if _plugins.is_dir():
+                    _sym = _plugins / "telegram"
+                    if not _sym.exists():
+                        # Find the actual plugin directory
+                        for _usr in [_root / "usr" / "plugins" / "telegram", Path(__file__).resolve().parent.parent.parent.parent]:
+                            if (_usr / "plugin.yaml").is_file():
+                                _sym.symlink_to(_usr)
+                                break
+                    break
+
             import plugins.telegram.helpers.telegram_bridge as bridge
 
             # Only attempt once per process lifetime (flag lives on the
