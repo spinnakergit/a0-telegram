@@ -641,16 +641,21 @@ class ChatBridgeBot:
     # ------------------------------------------------------------------
 
     async def _send_response(self, message, text: str):
-        """Send a response to Telegram, splitting long messages."""
+        """Send a response to Telegram with Markdown->HTML formatting."""
         if not text:
             text = "(No response)"
 
-        chunks = _split_message(text)
+        from usr.plugins.telegram.helpers.format_telegram import (
+            markdown_to_telegram_html,
+            split_html_message,
+            strip_html,
+        )
+
+        html = markdown_to_telegram_html(text)
+        chunks = split_html_message(html)
+
         for i, chunk in enumerate(chunks):
-            if i == 0:
-                sent = await message.reply_text(chunk)
-            else:
-                sent = await message.chat.send_message(chunk)
+            sent = await self._send_chunk(message, chunk, i)
 
             # Store bot response for telegram_read tool
             try:
@@ -662,7 +667,7 @@ class ChatBridgeBot:
                              "title": getattr(sent.chat, "title", ""),
                              "first_name": getattr(sent.chat, "first_name", ""),
                              "username": getattr(sent.chat, "username", "")},
-                    "text": sent.text or chunk,
+                    "text": sent.text or strip_html(chunk),
                     "from": {
                         "id": self._bot_user.id if self._bot_user else 0,
                         "first_name": self._bot_user.first_name if self._bot_user else "Bot",
@@ -673,6 +678,17 @@ class ChatBridgeBot:
                 store_message(str(sent.chat_id), raw_msg)
             except Exception:
                 pass
+
+    async def _send_chunk(self, message, html_chunk: str, index: int):
+        """Send one chunk as HTML, falling back to plain text on parse error."""
+        from telegram.error import BadRequest
+        from usr.plugins.telegram.helpers.format_telegram import strip_html
+
+        send_fn = message.reply_text if index == 0 else message.chat.send_message
+        try:
+            return await send_fn(html_chunk, parse_mode="HTML")
+        except BadRequest:
+            return await send_fn(strip_html(html_chunk))
 
 
 def _split_message(content: str, max_length: int = 4096) -> list[str]:
