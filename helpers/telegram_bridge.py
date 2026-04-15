@@ -687,26 +687,9 @@ class ChatBridgeBot:
         send_fn = message.reply_text if index == 0 else message.chat.send_message
         try:
             return await send_fn(html_chunk, parse_mode="HTML")
-        except BadRequest:
+        except BadRequest as exc:
+            logger.debug("HTML send failed (%s), retrying as plain text", exc)
             return await send_fn(strip_html(html_chunk))
-
-
-def _split_message(content: str, max_length: int = 4096) -> list[str]:
-    if len(content) <= max_length:
-        return [content]
-    chunks = []
-    while content:
-        if len(content) <= max_length:
-            chunks.append(content)
-            break
-        split_at = content.rfind("\n", 0, max_length)
-        if split_at == -1:
-            split_at = content.rfind(" ", 0, max_length)
-        if split_at == -1:
-            split_at = max_length
-        chunks.append(content[:split_at])
-        content = content[split_at:].lstrip("\n")
-    return chunks
 
 
 def _is_bot_alive() -> bool:

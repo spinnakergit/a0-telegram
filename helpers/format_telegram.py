@@ -80,11 +80,17 @@ def _escape_html(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _sanitize_url(url: str) -> str:
+    """Escape characters unsafe for use inside an HTML href attribute."""
+    return url.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 # ---------------------------------------------------------------------------
 # Conversion pipeline
 # ---------------------------------------------------------------------------
 
 def _convert(text: str) -> str:
+    text = text.replace("\x00", "")  # strip null bytes to protect stash sentinels
     stash: list[tuple[str, str]] = []
 
     def _put(html: str) -> str:
@@ -153,9 +159,15 @@ def _convert(text: str) -> str:
 
     # Images before links so ![alt](url) isn't caught as a link
     text = re.sub(
-        r"!\[([^\]]*)\]\(([^)]+)\)", r'🖼 <a href="\2">\1</a>', text
+        r"!\[([^\]]*)\]\(([^)]+)\)",
+        lambda m: f'🖼 <a href="{_sanitize_url(m.group(2))}">{m.group(1)}</a>',
+        text,
     )
-    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', text)
+    text = re.sub(
+        r"\[([^\]]+)\]\(([^)]+)\)",
+        lambda m: f'<a href="{_sanitize_url(m.group(2))}">{m.group(1)}</a>',
+        text,
+    )
 
     # Bold+italic (*** / ___) before bold (** / __) before italic (* / _)
     text = re.sub(r"\*{3}(.+?)\*{3}", r"<b><i>\1</i></b>", text)
