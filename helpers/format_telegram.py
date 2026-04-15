@@ -81,8 +81,11 @@ def _escape_html(text: str) -> str:
 
 
 def _sanitize_url(url: str) -> str:
-    """Escape characters unsafe for use inside an HTML href attribute."""
-    return url.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+    """Escape quotes for safe use inside an HTML href attribute.
+
+    Called after _escape_html (Phase 3) has already handled &, <, >.
+    Only " needs additional escaping to prevent attribute breakout."""
+    return url.replace('"', "&quot;")
 
 
 # ---------------------------------------------------------------------------
